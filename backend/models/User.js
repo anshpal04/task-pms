@@ -28,18 +28,6 @@ const userSchema = new mongoose.Schema(
       enum: ["user", "admin"], //only these two values allowed
       defualt: "user",
     },
-    // We store refresh tokens in an array on the user document
-    // This lets us invalidate tokens on logout or detect theft
-    refreshTokens: [
-      {
-        token: { type: String },
-        expiresAt: { type: Date },
-      },
-    ],
-    iaActive: {
-      type: Boolean,
-      defaul: true, //admins can deactivate accounts
-    },
   },
   {
     timestamps: true, // auto creates createdAt and updatedAt fields
@@ -69,17 +57,4 @@ userSchema.methods.cleanExpiredTokens = function () {
   const now = new Date();
   this.refreshTokens = this.refreshTokens.filter((t) => t.expiresAt > now);
 };
-
-// return user data safe to send to frontend no pass no refresh tokens
-//
-userSchema.methods.toSafeObject = function () {
-  return {
-    _id: this._id,
-    name: this.name,
-    email: this.email,
-    role: this.role,
-    createdAt: this.createdAt,
-  };
-};
-
 module.exports = mongoose.model("User", userSchema);
