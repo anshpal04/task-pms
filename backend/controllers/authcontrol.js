@@ -1,5 +1,5 @@
 const User = require("../models/User");
-const generateAccessToken = require("../utils/jwt");
+const generateToken = require("../utils/jwt");
 
 // @desc    Register a new user
 // @route   POST /api/auth/register
@@ -28,7 +28,7 @@ const registerUser = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        token: generateAccessToken(user._id, user.role),
+        token: generateToken(user._id, user.role),
       });
     } else {
       res.status(400).json({ message: "Invalid user data" });
@@ -48,13 +48,13 @@ const loginUser = async (req, res) => {
     const user = await User.findOne({ email });
 
     // 2. Check password (using the method we wrote in Day 1)
-    if (user && (await user.comparePassword(password))) {
+    if (user && (await user.matchPassword(password))) {
       res.json({
         _id: user.id,
         name: user.name,
         email: user.email,
         role: user.role,
-        token: generateAccessToken(user._id, user.role),
+        token: generateToken(user._id, user.role),
       });
     } else {
       res.status(401).json({ message: "Invalid email or password" });

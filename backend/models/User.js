@@ -26,7 +26,7 @@ const userSchema = new mongoose.Schema(
     role: {
       type: String,
       enum: ["user", "admin"], //only these two values allowed
-      defualt: "user",
+      default: "user",
     },
   },
   {
@@ -37,13 +37,12 @@ const userSchema = new mongoose.Schema(
 //this runs everytime we save a user
 // we only want to hash if the pass was actually changed
 
-userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next(); //skip if the pass is not changed
-  // gensalt(12) means 2^12 hashing rounds
+userSchema.pre("save", async function () {
+  // remove next parameter
+  if (!this.isModified("password")) return; // just return, no next()
   const salt = await bcrypt.genSalt(12);
   this.password = await bcrypt.hash(this.password, salt);
-
-  next(); //continue saving
+  // no next() needed
 });
 
 //-----instance methods-----
@@ -52,9 +51,5 @@ userSchema.pre("save", async function (next) {
 // compare a plain text pass with stored hash
 userSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
-};
-userSchema.methods.cleanExpiredTokens = function () {
-  const now = new Date();
-  this.refreshTokens = this.refreshTokens.filter((t) => t.expiresAt > now);
 };
 module.exports = mongoose.model("User", userSchema);
